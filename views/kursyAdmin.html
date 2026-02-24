@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- kursy</title>
+</head>
+<body>
+
+    <div class="top">
+        <h1>KURSY</h1>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Wyloguj</button>
+        </form>
+    </div>
+
+    <nav>
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/student">Studenci</a></button>
+        <button><a href="/kursy">Kursy</a></button>
+        <button><a href="/prowadzacy">Prowadzacy</a></button>
+    </nav>
+
+<h1>Lista Kursów</h1>
+<table id="kursTable"></table>
+
+<h2>Dodawanie Kursów</h2>
+
+<form id="kursForm">
+    <input type="text" id="nazwa" placeholder="Nazwa Kursu" required>
+    <input type="number" id="ects" placeholder="Ilość ECTS" required>
+    <button type="submit">Dodaj</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+    async function fetchKursy() {
+        try {
+            const response = await fetch('/api/kursy');
+            if (!response.ok) throw new Error('Błąd sieci');
+
+            const kursy = await response.json();
+            const Table = document.getElementById('kursTable');
+            Table.innerHTML = `<tr>
+                <th>Nazwa Kursu</th>
+                <th>Liczba ECTS</th> 
+                <th>Identyfikator kursu</th> 
+                <th></th>
+            </tr>`;
+
+           kursy.forEach(kurs => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td> ${kurs.nazwa_kursu} </td>
+                    <td> ${kurs.ects} </td>
+                    <td> ${kurs.kurs_id} </td>
+                    <td> <a href="/grupy/${kurs.kurs_id}"> Strona Kursu </a> </td>
+                `;
+                Table.appendChild(tr);
+            });
+
+        } catch (error) {
+            document.getElementById('kursTable').innerHTML =
+                '<tr><th>Nie udało się pobrać danych</tr></th>';
+        }
+    }
+
+    const form = document.getElementById("kursForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const nazwa_kursu = document.getElementById("nazwa").value;
+        const ects = parseInt(document.getElementById("ects").value);
+
+        message.textContent = "";
+
+        try {
+            const response = await fetch('/api/kursy', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nazwa_kursu, ects })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                message.style.color = "red";
+                message.textContent = data.error;
+                return;
+            }
+
+            message.style.color = "green";
+            message.textContent = "Dodano kurs ✅";
+
+            form.reset();
+            fetchKursy(); // odśwież listę
+
+        } catch (err) {
+            message.style.color = "red";
+            message.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', fetchKursy);
+</script>
+
+</body>
+</html>

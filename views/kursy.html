@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- kursy</title>
+</head>
+<body>
+
+    <div class="top">
+        <h1>KURSY</h1>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Wyloguj</button>
+        </form>
+    </div>
+
+    <nav>
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/student">Studenci</a></button>
+        <button><a href="/kursy">Kursy</a></button>
+        <button><a href="/prowadzacy">Prowadzacy</a></button>
+    </nav>
+
+<h1>Lista Kursów</h1>
+<table id="kursTable"></table>
+
+<script>
+    async function fetchKursy() {
+        try {
+            const response = await fetch('/api/kursy');
+            if (!response.ok) throw new Error('Błąd sieci');
+
+            const kursy = await response.json();
+            const Table = document.getElementById('kursTable');
+            Table.innerHTML = `<tr>
+                <th>Nazwa Kursu</th>
+                <th>Liczba ECTS</th> 
+                <th>Identyfikator kursu</th> 
+                <th></th>
+            </tr>`;
+
+           kursy.forEach(kurs => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td> ${kurs.nazwa_kursu} </td>
+                    <td> ${kurs.ects} </td>
+                    <td> ${kurs.kurs_id} </td>
+                    <td> <a href="/grupy/${kurs.kurs_id}"> Strona Kursu </a> </td>
+                `;
+                Table.appendChild(tr);
+            });
+
+        } catch (error) {
+            document.getElementById('kursTable').innerHTML =
+                '<tr><th>Nie udało się pobrać danych</tr></th>';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchKursy);
+</script>
+
+</body>
+</html>

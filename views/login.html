@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS</title>
+</head>
+<body>
+    <form id="loginForm">
+        <h1>Zaloguj się</h1>
+        <input type="text" id="login" placeholder="Login" required>
+        <input type="password" id="haslo" placeholder="Hasło" required>
+        <Button type="submit">Login</Button>
+        <p id="loginMessage"></p>
+    </form>
+
+
+    <form id="registerForm">
+        <h1>Lub zostań studentem</h1>
+        <input type="text" id="studentImie" placeholder="Imie" required>
+        <input type="text" id="studentNazwisko" placeholder="Nazwisko" required>
+        <input type="text" id="newLogin" placeholder="Login" required>
+        <input type="password" id="newHaslo" placeholder="Hasło" required>
+        <Button type="submit">Dołącz</Button>
+    </form>
+
+<script>
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
+    
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const login = document.getElementById("login").value;
+        const haslo = document.getElementById("haslo").value;
+
+        loginMessage.textContent = "";
+
+        try {
+            const response = await fetch('/api/login', {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ login, haslo })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                loginMessage.style.color = "red";
+                loginMessage.textContent = data.error;
+                return;
+            }
+
+            window.location.replace("/home");
+        } catch (error) {
+            loginMessage.style.color = "red";
+            loginMessage.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+    ///////////////////////////////////////////////////////////////
+
+    const registerForm = document.getElementById("registerForm");
+    const registerMessage = document.createElement("p"); // komunikat dla rejestracji
+    registerForm.after(registerMessage);
+
+    registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const imie = document.getElementById("studentImie").value;
+        const nazwisko = document.getElementById("studentNazwisko").value;
+        const login = document.getElementById("newLogin").value;
+        const haslo = document.getElementById("newHaslo").value;
+
+        registerMessage.textContent = "";
+
+        try {
+            const response = await fetch('/api/register', {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ imie, nazwisko, login, haslo })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                registerMessage.style.color = "red";
+                registerMessage.textContent = data.error;
+                return;
+            }
+
+            window.location.replace("/home");
+        } catch (error) {
+            registerMessage.style.color = "red";
+            registerMessage.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- grupy</title>
+</head>
+<body>
+    <div class="top">
+        <h1>KURSY</h1>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Wyloguj</button>
+        </form>
+    </div>
+
+    <nav>
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/student">Studenci</a></button>
+        <button><a href="/kursy">Kursy</a></button>
+        <button><a href="/prowadzacy">Prowadzacy</a></button>
+    </nav>
+
+    <table id="grupTable">
+    </table>
+
+<script>
+    const params = window.location.pathname.split('/');
+    const id = parseInt(params[2]); // kurs_id
+
+    let mojGrupId = null; // id grupy w której jest student
+
+    async function fetchGrups() {
+        try {
+            const sprawdzRes = await fetch(`/api/chodzi_na/sprawdz/${id}`);
+            const sprawdzData = await sprawdzRes.json();
+            mojGrupId = sprawdzData.grupa ? sprawdzData.grupa.grup_id : null;
+
+            const response = await fetch(`/api/grupy/${id}`);
+            if (!response.ok) throw new Error('Błąd sieci');
+
+            const grupy = await response.json();
+            const table = document.getElementById('grupTable');
+
+            table.innerHTML = `
+                <tr>
+                    <th>Prowadzący</th>
+                    <th>Początek Zajęć</th>
+                    <th>Koniec Zajęć</th>
+                    <th>Dzień Tygodnia</th>
+                    <th>Wolne Miejsca</th>
+                    <th></th>
+                </tr>
+            `;
+
+            grupy.forEach(grup => {
+                const tr = document.createElement('tr');
+
+                let przycisk;
+                if (mojGrupId === grup.grup_id) {
+                    przycisk = `<button class="wyrejestruj" data-id="${grup.grup_id}">Wyrejestruj</button>`;
+                } else if (mojGrupId !== null) {
+                    przycisk = `<button disabled>Zarejestruj</button>`;
+                } else {
+                    przycisk = `<button class="zarejestruj" data-id="${grup.grup_id}">Zarejestruj</button>`;
+                }
+
+                tr.innerHTML = `
+                    <td>${(grup.imie && grup.nazwisko) ? grup.imie + " " + grup.nazwisko : "..."}</td>
+                    <td>${grup.zajecia_od || "..."}</td>
+                    <td>${grup.zajecia_do || "..."}</td>
+                    <td> ${grup.dzien_tygodnia || "..."} </td>
+                    <td>${grup.wolne_miejsca}</td>
+                    <td>${przycisk}</td>
+                `;
+                table.appendChild(tr);
+            });
+        } catch (err) {
+            console.error(err);
+            document.getElementById('grupTable').innerHTML = `Nie udało się pobrać danych ${err}`;
+        }
+    }
+
+    document.getElementById('grupTable').addEventListener('click', async (e) => {
+        // rejestracja
+        if (e.target.classList.contains('zarejestruj')) {
+            const grupId = e.target.dataset.id;
+
+            const response = await fetch('/api/chodzi_na', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ grup_id: grupId, kurs_id: id })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error);
+                return;
+            }
+
+            alert('Zarejestrowano pomyślnie!');
+            fetchGrups();
+        }
+
+        // wyrejestrowanie
+        if (e.target.classList.contains('wyrejestruj')) {
+            const grupId = e.target.dataset.id;
+
+            const response = await fetch(`/api/chodzi_na/${grupId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error);
+                return;
+            }
+
+            alert('Wyrejestrowano pomyślnie!');
+            fetchGrups();
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => fetchGrups());
+</script>
+</body>
+</html>

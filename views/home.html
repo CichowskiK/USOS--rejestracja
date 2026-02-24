@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- home</title>
+</head>
+<body>
+    <div class="top">
+        <h1>HOME</h1>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Wyloguj</button>
+        </form>
+    </div>
+
+    <nav>
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/student">Studenci</a></button>
+        <button><a href="/kursy">Kursy</a></button>
+        <button><a href="/prowadzacy">Prowadzacy</a></button>
+    </nav>
+
+    <div>
+        <h2>Moje Grupy</h2>
+        <table id="grupTable">
+            <tr>
+                <th>Kurs</th>
+                <th>Prowadzący</th>
+                <th>Początek Zajęć</th>
+                <th>Koniec Zajęć</th>
+                <th>Dzień Tygodnia</th>
+            </tr>
+        </table>
+    </div>
+
+
+<script>
+    async function fetchMojeGrupy() {
+        try {
+            const response = await fetch('/api/grupy/moje');
+
+            if (!response.ok) throw new Error('Błąd sieci');
+            
+            const grupy = await response.json();
+            const table= document.getElementById('grupTable');
+
+            grupy.forEach(grup => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td> ${grup.nazwa_kursu} </td>
+                    <td> ${(grup.imie && grup.nazwisko) ? grup.imie + " " + grup.nazwisko : "..."} </td>
+                    <td> ${grup.zajecia_od || "..."} </td>
+                    <td> ${grup.zajecia_do || "..."} </td>
+                    <td> ${grup.dzien_tygodnia || "..."} </td>
+                `;
+                table.appendChild(tr);
+            });
+        } catch (err) {
+            console.error(err);
+            document.getElementById('grupTable').innerHTML =
+                `Nie udało się pobrać danych ${err}`
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => fetchMojeGrupy());
+    </script>
+</body>
+</html>

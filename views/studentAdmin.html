@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- studenci- admin</title>
+</head>
+<body>
+
+<h1>Lista studentów</h1>
+<ul id="studentList"></ul>
+
+<h2>Dodawanie studentów</h2>
+
+<form id="addForm">
+    <input type="text" id="imie" placeholder="Imię" required>
+    <input type="text" id="nazwisko" placeholder="Nazwisko" required>
+    <button type="submit">Dodaj</button>
+</form>
+
+<p id="addMessage"></p>
+
+<h2>Usuwanie studentów</h2>
+
+<form id="delForm">
+    <input type="number" id="id" placeholder="Id studenta" required>
+    <button type="submit">Usuń</button>
+</form>
+
+<p id="delMessage"></p>
+
+<script>
+    async function fetchStudents() {
+        try {
+            const response = await fetch('/api/student');
+            if (!response.ok) throw new Error('Błąd sieci');
+
+            const students = await response.json();
+            const list = document.getElementById('studentList');
+            list.innerHTML = '';
+
+            students.forEach(student => {
+                const li = document.createElement('li');
+                li.textContent = `${student.imie} ${student.nazwisko} ID: ${student.student_id}`;
+                list.appendChild(li);
+            });
+
+        } catch (error) {
+            document.getElementById('studentList').innerHTML =
+                '<li>Nie udało się pobrać danych</li>';
+        }
+    }
+
+    /////////////////////////////////////////////////
+
+    const addForm = document.getElementById("addForm");
+    const message = document.getElementById("addMessage");
+
+    addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const imie = document.getElementById("imie").value;
+        const nazwisko = document.getElementById("nazwisko").value;
+
+        message.textContent = "";
+
+        try {
+            const response = await fetch('/api/student', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ imie, nazwisko })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                message.style.color = "red";
+                message.textContent = data.error;
+                return;
+            }
+
+            message.style.color = "green";
+            message.textContent = "Dodano studenta ✅";
+
+            addForm.reset();
+            fetchStudents(); // odśwież listę
+
+        } catch (err) {
+            message.style.color = "red";
+            message.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+    //////////////////////////////////////////////////////////
+
+    const delForm=document.getElementById('delForm');
+    const delMessage= document.getElementById('delMessage')
+
+    delForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        delMessage.innerHTML= '';
+        const id= parseInt(document.getElementById('id').value);
+
+        try {
+            const response = await fetch('/api/student', {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                delMessage.style.color = "red";
+                delMessage.textContent = data.error;
+                return;
+            }
+
+            delMessage.style.color = "green";
+            delMessage.textContent = "Usunięto studenta ✅";
+
+            delForm.reset();
+            fetchStudents(); // odśwież listę
+
+        } catch (err) {
+            delMessage.style.color = "red";
+            delMessage.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+    //////////////////////////////////////////////////////////
+
+    window.addEventListener('DOMContentLoaded', fetchStudents);
+</script>
+
+</body>
+</html>

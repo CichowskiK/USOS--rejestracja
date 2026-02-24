@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- grupy- Admin</title>
+</head>
+<body>
+    <h1>Grupy</h1>
+
+    <ol id="grupList"></ol>
+
+    <h2>Dodawanie Grup</h2>
+
+    <form id="addForm">
+        <input type="number" id="kurs" placeholder="Id kursu" required>
+        <input type="number" id="miejsca" placeholder="Ile miejsc w grupie" required>
+        <input type="time" id="poczatek" placeholder="O której zaczynają się zajęcia">
+        <input type="time" id="koniec" placeholder="O której kończą się zajęcia">
+        <input type="number" id="prowadzacy" placeholder="Id prowadzącego">
+        <select id="dzien">
+            <option value="">-- Wybierz dzień --</option>
+            <option value="poniedzialek">Poniedziałek</option>
+            <option value="wtorek">Wtorek</option>
+            <option value="sroda">Środa</option>
+            <option value="czwartek">Czwartek</option>
+            <option value="piatek">Piątek</option>
+            <option value="sobota">Sobota</option>
+            <option value="niedziela">Niedziela</option>
+        </select>
+        <button type="submit">Dodaj</button>
+    </form>
+
+    <p id="addMessage"></p>
+
+    <h2>Usuwanie Grup</h2>
+
+    <form id="grupDelete">
+        <input type="number" id="delId" placeholder="Id grupy do usunięcia" required>
+        <button type="submit">Usuń</button>
+    </form>
+
+    <p id="delMessage"></p>
+
+<script>
+    async function fetchGrups() {
+        try {
+            const response = await fetch(`/api/grupy`);
+            
+            if (!response.ok) throw new Error('Błąd sieci');
+
+            const grupy = await response.json();
+            const list= document.getElementById('grupList');
+            list.innerHTML = '';
+
+            grupy.forEach(grup => {
+                const li = document.createElement('li');
+                li.textContent = `zajecia od: ${grup.zajecia_od}   zajecia do: ${grup.zajecia_do}, wolne miejsca: ${grup.wolne_miejsca}, id grupy: ${grup.grup_id}, dziń tygodnia: ${grup.dzien_tygodnia || "..."}`;
+                list.appendChild(li);
+            });
+        } catch (err) {
+            console.error(err);
+            document.getElementById('grupList').innerHTML =
+                '<li>Nie udało się pobrać danych</li>'
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////
+
+    const addForm = document.getElementById("addForm");
+    const addMessage = document.getElementById("addMessage");
+
+    addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const kurs = parseInt(document.getElementById("kurs").value);
+        const prowadzacy = parseInt(document.getElementById("prowadzacy").value);
+        const miejsca = parseInt(document.getElementById("miejsca").value);
+        const poczatek = document.getElementById("poczatek").value || null;
+        const koniec = document.getElementById("koniec").value || null;
+        const dzien = document.getElementById("dzien").value || null;
+
+        addMessage.textContent = "";
+
+        try {
+            const response = await fetch('/api/grupy', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ kurs, prowadzacy, miejsca, poczatek, koniec, dzien })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                addMessage.style.color = "red";
+                addMessage.textContent = data.error;
+                return;
+            }
+
+            addMessage.style.color = "green";
+            addMessage.textContent = "Dodano grupe ✅";
+
+            addForm.reset();
+            fetchGrups(); // odśwież listę
+
+        } catch (err) {
+            message.style.color = "red";
+            message.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+    //////////////////////////////////////////////////////////////////
+
+    const delForm= document.getElementById('grupDelete');
+    const delMessage= document.getElementById('delMessage');
+
+    delForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        delMessage.innerHTML= '';
+        const id= parseInt(document.getElementById('delId').value);
+
+        try {
+            const response = await fetch('/api/grupy', {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({id})
+            });
+
+            const data= await response.json();
+
+            if (!response.ok) {
+                delMessage.style.color = "red";
+                delMessage.textContent = data.error;
+                return;
+            }
+
+            delMessage.style.color = "green";
+            delMessage.textContent = "Usunięto grupe ✅";
+
+            delForm.reset();
+            fetchGrups(); // odśwież listę
+        } catch (error) {
+            delMessage.style.color = "red";
+            // delMessage.textContent = "Błąd połączenia z serwerem";
+            delMessage.textContent = error
+        }
+    })
+
+
+    //////////////////////////////////////////////////////////////////
+
+    window.addEventListener('DOMContentLoaded', () => fetchGrups());
+</script>
+</body>
+</html>
