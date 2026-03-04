@@ -7,7 +7,22 @@
     <title>USOS- grupy- Admin</title>
 </head>
 <body>
-    <h1>Grupy</h1>
+    <div class="top">
+        <h1>GRUPY</h1>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Wyloguj</button>
+        </form>
+    </div>
+
+
+    <nav id="navAdmin">
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/panel/admin">Panel Admina</a></button>
+        <button><a href="/student/admin">Studenci</a></button>
+        <button><a href="/kursy/admin">Kursy</a></button>
+        <button><a href="/grupy/admin">Grupy</a></button>
+        <button><a href="/prowadzacy/admin">Prowadzacy</a></button>
+    </nav>
 
     <ol id="grupList"></ol>
 

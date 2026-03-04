@@ -51,7 +51,7 @@ const createStudent = async (imie, nazwisko) => {
 
 const deleteStudent = async (id) => {
     const result= await pool.query(
-        "DELETE FROM student WHERE student_id=($1) RETURNING *",
+        "DELETE FROM student WHERE student_id= $1  RETURNING *",
         [id]
     )
     return result.rows[0];

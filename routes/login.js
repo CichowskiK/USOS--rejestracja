@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { loginStudent } = require("../models/student");
+const { loginAdmin } = require("../models/admin");
 
 router.post('/', async (req, res) => {  
     const { login, haslo } = req.body;
@@ -9,18 +10,23 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Wypełnij wszystkie pola' });
     }
     
-    const student = await loginStudent(login, haslo);
+    let user = await loginStudent(login, haslo);
     
-    if (!student) {
-        return res.status(401).json({ error: 'Błędne dane' });
+    if (user) {
+        req.session.studentId = user.student_id; 
+        req.session.role = "student"
+        return res.json({ success: true });
     }
 
-    req.session.studentId = student.student_id; 
-    res.json({ success: true });
-});
+    user = await loginAdmin(login, haslo);
 
-router.get('/', async (req, res) => {
-    res.json({ studentId: req.session.studentId });
-})
+    if (user) {
+        req.session.adminId = user.admin_id;
+        req.session.role = "admin"
+        return res.json({ success: true });
+    }
+
+    return res.status(401).json({ error: 'Błędne dane' });
+});
 
 module.exports = router;

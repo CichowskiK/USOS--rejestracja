@@ -1,6 +1,7 @@
 const express = require("express");
 const { readFile } = require("fs").promises;
 const session = require('express-session');
+const { requireLogin, requireLoginAdmin, requireLoginStudent } = require('./middleware/auth');
 require('dotenv').config();
 
 const app = express();
@@ -11,8 +12,6 @@ app.use(express.urlencoded({ extended: true }));   //?????
 
 
 // sesja
-
-const requireLogin = require('./middleware/auth');
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -51,9 +50,14 @@ app.get("/", async (req, res) => {
 app.use(requireLogin);
 
 app.get('/api/whoami', (req, res) => {
-    res.json({ studentId: req.session.studentId });
+    res.json({ 
+      role: req.session.role,
+      userId: req.session.studentId || req.session.adminId
+    });
 });
 
+const adminRoutes = require("./routes/admin");
+app.use("/api/admin", adminRoutes);
 const studentRoutes = require("./routes/student");
 app.use("/api/student", studentRoutes);
 const kursyRoutes = require("./routes/kursy");
@@ -63,7 +67,7 @@ app.use("/api/grupy", grupyRoutes);
 const porwadzacyRoutes = require("./routes/prowadzacy");
 app.use("/api/prowadzacy", porwadzacyRoutes);
 const chodzi_naRoutes = require("./routes/chodzi_na");
-app.use("/api/chodzi_na", chodzi_naRoutes);
+app.use("/api/chodzi_na", chodzi_naRoutes); 
 
 
 app.get("/home", async (req, res) => {
@@ -72,31 +76,37 @@ app.get("/home", async (req, res) => {
   );
 });
 
+app.get("/panel/admin", requireLoginAdmin, async (req, res) => {
+  res.send(
+    await readFile('./views/panelAdmin.html', 'utf-8')
+  );
+})
+
 app.get("/student", async (req, res) => {
   res.send(
     await readFile('./views/student.html', 'utf-8')
-  )
-})
+  );
+});
 
-app.get("/student/admin", async (req, res) => {
+app.get("/student/admin", requireLoginAdmin, async (req, res) => {
   res.send(
     await readFile('./views/studentAdmin.html', 'utf-8')
-  )
-})
+  );
+});
 
-app.get("/kursy/admin", async (req, res) => {
+app.get("/kursy/admin", requireLoginAdmin, async (req, res) => {
   res.send(
     await readFile('./views/kursyAdmin.html', 'utf-8')
-  )
-})
+  );
+});
 
 app.get("/kursy", async (req, res) => {
   res.send(
     await readFile('./views/kursy.html', 'utf-8')
-  )
-})
+  );
+});
 
-app.get("/grupy/admin", async (req, res) => {
+app.get("/grupy/admin", requireLoginAdmin, async (req, res) => {
   res.send(
     await readFile('./views/grupyAdmin.html', 'utf-8')
   );
@@ -112,10 +122,10 @@ app.get("/prowadzacy", async (req, res) => {
   res.send(
     await readFile('./views/prowadzacy.html', 'utf-8')
   );
-})
+});
 
-app.get("/prowadzacy/admin", async (req, res) => {
+app.get("/prowadzacy/admin", requireLoginAdmin, async (req, res) => {
   res.send(
     await readFile('./views/prowadzacyAdmin.html', 'utf-8')
   );
-})
+});

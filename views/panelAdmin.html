@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>USOS- Admin Panel</title>
+</head>
+<body>
+    <div class="top">
+        <h1>ADMIN PANEL</h1>
+        <form action="/api/logout" method="POST">
+            <button type="submit">Wyloguj</button>
+        </form>
+    </div>
+
+    <nav id="navAdmin">
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/panel/admin">Panel Admina</a></button>
+        <button><a href="/student/admin">Studenci</a></button>
+        <button><a href="/kursy/admin">Kursy</a></button>
+        <button><a href="/grupy/admin">Grupy</a></button>
+        <button><a href="/prowadzacy/admin">Prowadzacy</a></button>
+    </nav>
+
+    <h2>Lista Adminów</h2>
+    <table id="adminTable"></table>
+
+    <h2>Usuwanie Adminów</h2>
+    <form id="delForm">
+        <input type="number" id="id" placeholder="Id admina" required>
+        <button type="submit">Usuń</button>
+    </form>
+    <p id="delMessage"></p>
+
+    <h2>Dodawanie Adminów</h2>
+    <form id="addForm">
+        <input type="text" id="name" placeholder="Imię" required>
+        <input type="text" id="surname" placeholder="Nazwisko" required>
+        <input type="text" id="login" placeholder="Login" required>
+        <input type="text" id="password" placeholder="Hasło" required>
+        <button type="submit">Dodaj</button>
+    </form>
+    <p id="addMessage"></p>
+
+
+<script>
+    async function fetchAdmin() {
+        try {
+            const response = await fetch('/api/admin');
+            if (!response.ok) throw new Error("Błąd sieci");
+
+            const data = await response.json();
+            const table = document.getElementById("adminTable");
+            table.innerHTML =`<tr>
+            <th>Imie</th>
+            <th>Nazwisko</th>
+            <th>Login</th>
+            <th>Id</th>
+            </tr>`;
+
+            data.forEach(element => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td> ${element.name} </td>
+                    <td> ${element.surname} </td>
+                    <td> ${element.login} </td>
+                    <td> ${element.admin_id} </td>
+                `
+                table.appendChild(tr);
+            });
+        } catch(err) {
+            console.error(err);
+            const table = document.getElementById("adminTable").innerHTML = 
+                    '<tr><th>Nie udało się pobrać danych</tr></th>';
+        }
+
+        
+    }
+    window.addEventListener('DOMContentLoaded', fetchAdmin);
+
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    const addForm = document.getElementById("addForm");
+    const addMessage = document.getElementById("addMessage");
+
+    addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("name").value;
+        const surname = document.getElementById("surname").value;
+        const login = document.getElementById("login").value;
+        const password = document.getElementById("password").value;
+
+        addMessage.textContent = "";
+
+        try {
+            const response = await fetch('/api/register/admin', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, surname, login, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                addMessage.style.color = "red";
+                addMessage.textContent = data.error;
+                return;
+            }
+
+            addMessage.style.color = "green";
+            addMessage.textContent = "Dodano studenta ✅";
+
+            addForm.reset();
+            fetchAdmin(); // odśwież listę
+
+        } catch (err) {
+            addMessage.style.color = "red";
+            addMessage.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+    //////////////////////////////////////////////////////////
+
+    const delForm=document.getElementById('delForm');
+    const delMessage= document.getElementById('delMessage')
+
+    delForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        delMessage.innerHTML= '';
+        const id= parseInt(document.getElementById('id').value);
+
+        try {
+            const response = await fetch('/api/admin', {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                delMessage.style.color = "red";
+                delMessage.textContent = data.error;
+                return;
+            }
+
+            delMessage.style.color = "green";
+            delMessage.textContent = "Usunięto admina ✅";
+
+            delForm.reset();
+            fetchAdmin();
+
+        } catch (err) {
+            delMessage.style.color = "red";
+            delMessage.textContent = "Błąd połączenia z serwerem";
+        }
+    });
+
+</script>
+</body>
+</html>

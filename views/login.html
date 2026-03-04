@@ -68,18 +68,18 @@
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const imie = document.getElementById("studentImie").value;
-        const nazwisko = document.getElementById("studentNazwisko").value;
+        const name = document.getElementById("studentImie").value;
+        const surname = document.getElementById("studentNazwisko").value;
         const login = document.getElementById("newLogin").value;
-        const haslo = document.getElementById("newHaslo").value;
+        const password = document.getElementById("newHaslo").value;
 
         registerMessage.textContent = "";
 
         try {
-            const response = await fetch('/api/register', {
+            const response = await fetch('/api/register/student', {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ imie, nazwisko, login, haslo })
+                body: JSON.stringify({ name, surname, login, password })
             });
 
             const data = await response.json();

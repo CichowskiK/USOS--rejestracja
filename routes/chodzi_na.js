@@ -23,12 +23,13 @@ router.post('/', async (req, res) => {
 
     try {
         const juzZapisany = await getStudentGrupa(studentId, kurs_id);
+        
         if (juzZapisany) {
             return res.status(400).json({ error: 'Jesteś już zapisany do grupy z tego kursu' });
         }
 
-        const wpis = await register(grup_id, studentId);
         const zapisany = await zajmijMiejsce(grup_id);
+        const wpis = await register(grup_id, studentId);
         res.json({ success: true, wpis });
     } catch (err) {
         console.error(err);

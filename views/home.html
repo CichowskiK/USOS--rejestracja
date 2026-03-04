@@ -14,14 +14,23 @@
         </form>
     </div>
 
-    <nav>
+    <nav id="navStudent">
         <button><a href="/home">Strona Główna</a></button>
         <button><a href="/student">Studenci</a></button>
         <button><a href="/kursy">Kursy</a></button>
         <button><a href="/prowadzacy">Prowadzacy</a></button>
     </nav>
 
-    <div>
+    <nav id="navAdmin" style="display: none ;">
+        <button><a href="/home">Strona Główna</a></button>
+        <button><a href="/panel/admin">Panel Admina</a></button>
+        <button><a href="/student/admin">Studenci</a></button>
+        <button><a href="/kursy/admin">Kursy</a></button>
+        <button><a href="/grupy/admin">Grupy</a></button>
+        <button><a href="/prowadzacy/admin">Prowadzacy</a></button>
+    </nav>
+
+    <div id="mojeGrupy">
         <h2>Moje Grupy</h2>
         <table id="grupTable">
             <tr>
@@ -63,7 +72,24 @@
         }
     }
 
-    window.addEventListener('DOMContentLoaded', () => fetchMojeGrupy());
-    </script>
+    async function load() {
+        const res = await fetch('/api/whoami');
+        const data = await res.json();
+
+        if (data.role === 'admin') {
+            document.getElementById('navAdmin').style.display = 'block';
+            document.getElementById('navStudent').style.display = 'none';
+            document.getElementById('mojeGrupy').style.display = 'none';
+        }
+
+        if (data.role === 'student') {
+            document.getElementById('navAdmin').style.display = 'none';
+            document.getElementById('navStudent').style.display = 'block';
+            fetchMojeGrupy()
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => load());
+</script>
 </body>
 </html>
