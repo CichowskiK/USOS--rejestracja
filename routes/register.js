@@ -6,12 +6,12 @@ const { registerAdmin } = require("../models/admin");
 router.post('/student', async (req, res) => {
     const {name, surname, login, password} = req.body;
 
-    if (!imie || !nazwisko || !login || !haslo) {
+    if (!name || !surname || !login || !password) {
         return res.status(400).json({ error: 'Wypełnij wszystkie pola' });
     }
 
     try {
-        const student = await registerStudent(imie, nazwisko, haslo, login);
+        const student = await registerStudent(name, surname, password, login);
         req.session.studentId = student.student_id;
         res.json({ success: true });
     } catch (err) {
