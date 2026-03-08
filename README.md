@@ -1,3 +1,5 @@
+# Działa na domenie https://usos-rejestracja-production.up.railway.app/home
+
 # 🎓 USOS — Rejestracja na zajęcia
 
 Platforma modelowana na kształt USOS, skupiona na funkcjonalności rejestracji studentów na grupy zajęciowe.
