@@ -23,6 +23,13 @@ const registerAdmin = async (name, surname, password, login) => {
     const saltRounds = 10;
     const hash = await bcrypt.hash(password, saltRounds);
 
+    const checkLogin = await pool.query (
+        "SELECT COUNT(*) FROM student WHERE login=$1",
+        [login]
+    );
+
+    if (parseInt(checkLogin.rows[0].count) > 0) return null;
+
     const result = await pool.query(
         "INSERT INTO admin (name, surname, password, login) VALUES ($1, $2, $3, $4) RETURNING *",
         [name, surname, hash, login]

@@ -29,6 +29,12 @@ const registerStudent = async (imie, nazwisko, haslo, login) => {
     const saltRounds = 10;
     const hash = await bcrypt.hash(haslo, saltRounds);
 
+    const checkLogin = await pool.query (
+        "SELECT COUNT(*) FROM admin WHERE login=$1",
+        [login]
+    );
+
+    if (parseInt(checkLogin.rows[0].count) > 0) return null;
 
 
     const result = await pool.query(

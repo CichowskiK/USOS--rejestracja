@@ -9,8 +9,8 @@
 <body>
     <form id="loginForm">
         <h1>Zaloguj się</h1>
-        <input type="text" id="login" placeholder="Login" required>
-        <input type="password" id="haslo" placeholder="Hasło" required>
+        <input type="text" id="login" placeholder="Login" maxlength="50" required>
+        <input type="password" id="haslo" placeholder="Hasło" maxlength="50" required>
         <Button type="submit">Login</Button>
         <p id="loginMessage"></p>
     </form>
@@ -18,11 +18,12 @@
 
     <form id="registerForm">
         <h1>Lub zostań studentem</h1>
-        <input type="text" id="studentImie" placeholder="Imie" required>
-        <input type="text" id="studentNazwisko" placeholder="Nazwisko" required>
-        <input type="text" id="newLogin" placeholder="Login" required>
-        <input type="password" id="newHaslo" placeholder="Hasło" required>
+        <input type="text" id="studentImie" placeholder="Imie" maxlength="50" required>
+        <input type="text" id="studentNazwisko" placeholder="Nazwisko" maxlength="50" required>
+        <input type="text" id="newLogin" placeholder="Login" maxlength="30" required>
+        <input type="password" id="newHaslo" placeholder="Hasło" minlength="8" maxlength="72" required>
         <Button type="submit">Dołącz</Button>
+        <p id="registerMessage"></p>
     </form>
 
 <script>
@@ -62,8 +63,7 @@
     ///////////////////////////////////////////////////////////////
 
     const registerForm = document.getElementById("registerForm");
-    const registerMessage = document.createElement("p"); // komunikat dla rejestracji
-    registerForm.after(registerMessage);
+    const registerMessage = document.getElementById("registerMessage");
 
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
