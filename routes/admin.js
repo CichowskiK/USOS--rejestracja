@@ -20,6 +20,7 @@ router.delete('/', async (req, res) => {
     }
 
     try {
+        if (parseInt(id) == 3 ) return res.status(400).json({ error: "Nie można usunąć tego admina" });
         const deletedAdmin = await deleteAdmin(id);
         res.json(deletedAdmin);
     } catch (err) {
